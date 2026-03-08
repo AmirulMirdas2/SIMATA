@@ -73,5 +73,5 @@ Proyek ini dikembangkan secara kolaboratif oleh:
 ### Langkah-langkah
 1. **Clone repositori ini:**
    ```bash
-   git clone [https://github.com/username/simata-repo.git](https://github.com/username/simata-repo.git)
+   git clone https://github.com/AmirulMirdas2/SIMATA.git
    cd simata-repo
