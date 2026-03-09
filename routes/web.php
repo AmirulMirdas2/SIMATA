@@ -25,12 +25,17 @@ Route::middleware(['auth'])->group(function () {
     
     // Admin Routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
+        Route::resource('rute', \App\Http\Controllers\AdminRuteController::class);
+        Route::resource('po', \App\Http\Controllers\AdminPoBusController::class);
     });
 
     // Mitra Routes
     Route::middleware(['role:mitra'])->prefix('mitra')->name('mitra.')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'mitra'])->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\MitraController::class, 'dashboard'])->name('dashboard');
+        Route::get('/manifest', [\App\Http\Controllers\MitraController::class, 'manifest'])->name('manifest');
+        Route::resource('armada', \App\Http\Controllers\MitraArmadaController::class);
+        Route::resource('jadwal', \App\Http\Controllers\MitraJadwalController::class);
     });
 
     // Penumpang Routes
@@ -39,9 +44,11 @@ Route::middleware(['auth'])->group(function () {
         
         // Tahap 3: Pemesanan Tiket
         Route::get('/cari-jadwal', [PemesananController::class, 'index'])->name('cari');
+        Route::get('/api/jadwal/available-dates', [PemesananController::class, 'getAvailableDates'])->name('api.available-dates');
         Route::get('/jadwal/{id}/kursi', [PemesananController::class, 'pilihKursi'])->name('pilih_kursi');
         Route::post('/jadwal/{id}/pesan', [PemesananController::class, 'pesan'])->name('pesan');
         Route::get('/pemesanan/{id}', [PemesananController::class, 'detailPemesanan'])->name('pemesanan.detail');
         Route::post('/pemesanan/{id}/bayar', [PemesananController::class, 'bayar'])->name('bayar');
+        Route::get('/pemesanan/{id}/e-ticket', [PemesananController::class, 'eTicket'])->name('pemesanan.eticket');
     });
 });

@@ -60,9 +60,12 @@
             </button>
         </form>
     @elseif($pemesanan->status_bayar == 'Paid')
-         <div class="bg-green-50 p-4 rounded text-center border border-green-200">
-             <h3 class="text-xl font-bold text-green-700 mb-2">Tiket Lunas!</h3>
-             <p class="text-gray-700">Terima kasih, pembayaran Anda telah kami terima.</p>
+         <div class="bg-green-50 p-6 rounded-lg text-center border border-green-200">
+             <h3 class="text-2xl font-bold text-green-700 mb-2">Tiket Lunas!</h3>
+             <p class="text-gray-700 mb-6">Terima kasih, pembayaran Anda telah kami terima.</p>
+             <a href="{{ route('penumpang.pemesanan.eticket', $pemesanan->id) }}" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition">
+                 <i class="fas fa-ticket-alt mr-2"></i> Lihat E-Ticket
+             </a>
          </div>
     @endif
 </div>

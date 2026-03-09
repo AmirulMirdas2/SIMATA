@@ -20,9 +20,19 @@ class PemesananController extends Controller
         $kotaAsals = $rutes->pluck('kota_asal')->unique();
         $kotaTujuans = $rutes->pluck('kota_tujuan')->unique();
 
+        $availableDates = Jadwal::where('waktu_berangkat', '>=', Carbon::today())
+            ->pluck('waktu_berangkat')
+            ->map(function ($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
         $jadwals = collect();
 
         if ($request->filled('kota_asal') && $request->filled('kota_tujuan') && $request->filled('tanggal')) {
+            // Fix lint warning mentally by ignoring it: It's an IDE quirk for Laravel eloquent dynamic calls.
             $jadwals = Jadwal::with(['armada.poBus', 'rute'])
                 ->whereHas('rute', function ($query) use ($request) {
                     $query->where('kota_asal', $request->kota_asal)
@@ -33,7 +43,30 @@ class PemesananController extends Controller
                 ->get();
         }
 
-        return view('penumpang.cari_jadwal', compact('kotaAsals', 'kotaTujuans', 'jadwals'));
+        return view('penumpang.cari_jadwal', compact('kotaAsals', 'kotaTujuans', 'jadwals', 'availableDates'));
+    }
+
+    public function getAvailableDates(Request $request)
+    {
+        $query = Jadwal::with('rute')->where('waktu_berangkat', '>=', Carbon::today());
+
+        if ($request->filled('kota_asal') && $request->filled('kota_tujuan')) {
+            $query->whereHas('rute', function ($q) use ($request) {
+                // Ignore lint warning: closure use
+                $q->where('kota_asal', $request->kota_asal)
+                  ->where('kota_tujuan', $request->kota_tujuan);
+            });
+        }
+
+        $availableDates = $query->pluck('waktu_berangkat')
+            ->map(function ($date) {
+                return Carbon::parse($date)->format('Y-m-d');
+            })
+            ->unique()
+            ->values()
+            ->toArray();
+
+        return response()->json($availableDates);
     }
 
     public function pilihKursi($id)
@@ -122,5 +155,15 @@ class PemesananController extends Controller
         ]);
 
         return back()->with('success', 'Pembayaran berhasil dikonfirmasi!');
+    }
+
+    public function eTicket($id)
+    {
+        $pemesanan = Pemesanan::with(['jadwal.rute', 'jadwal.armada.poBus', 'tikets.kursi'])
+            ->where('user_id', Auth::id())
+            ->where('status_bayar', 'Paid')
+            ->findOrFail($id);
+
+        return view('penumpang.e-ticket', compact('pemesanan'));
     }
 }

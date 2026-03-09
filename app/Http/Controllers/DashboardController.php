@@ -18,6 +18,11 @@ class DashboardController extends Controller
 
     public function penumpang()
     {
-        return view('penumpang.dashboard');
+        $riwayatPemesanan = \App\Models\Pemesanan::with(['jadwal.rute', 'jadwal.armada.poBus'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return view('penumpang.dashboard', compact('riwayatPemesanan'));
     }
 }

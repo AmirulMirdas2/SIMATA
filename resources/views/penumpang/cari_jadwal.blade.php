@@ -9,7 +9,7 @@
     <form method="GET" action="{{ route('penumpang.cari') }}" class="flex flex-wrap gap-4 mb-8 bg-gray-50 p-6 rounded border">
         <div class="flex-1 min-w-[200px]">
             <label class="block text-gray-700 mb-1 font-semibold">Kota Asal</label>
-            <select name="kota_asal" class="w-full border p-2 rounded focus:ring outline-none" required>
+            <select name="kota_asal" id="kota_asal" class="w-full border p-2 rounded focus:ring outline-none" required>
                 <option value="">-- Pilih Asal --</option>
                 @foreach($kotaAsals as $kota)
                     <option value="{{ $kota }}" {{ request('kota_asal') == $kota ? 'selected' : '' }}>{{ $kota }}</option>
@@ -19,7 +19,7 @@
         
         <div class="flex-1 min-w-[200px]">
             <label class="block text-gray-700 mb-1 font-semibold">Kota Tujuan</label>
-            <select name="kota_tujuan" class="w-full border p-2 rounded focus:ring outline-none" required>
+            <select name="kota_tujuan" id="kota_tujuan" class="w-full border p-2 rounded focus:ring outline-none" required>
                 <option value="">-- Pilih Tujuan --</option>
                 @foreach($kotaTujuans as $kota)
                     <option value="{{ $kota }}" {{ request('kota_tujuan') == $kota ? 'selected' : '' }}>{{ $kota }}</option>
@@ -29,7 +29,7 @@
 
         <div class="flex-1 min-w-[200px]">
             <label class="block text-gray-700 mb-1 font-semibold">Tanggal Berangkat</label>
-            <input type="date" name="tanggal" value="{{ request('tanggal') ?? now()->format('Y-m-d') }}" min="{{ now()->format('Y-m-d') }}" class="w-full border p-2 rounded focus:ring outline-none" required>
+            <input type="text" id="tanggal" name="tanggal" value="{{ request('tanggal') ?? now()->format('Y-m-d') }}" class="w-full border p-2 rounded focus:ring outline-none bg-white cursor-pointer" required placeholder="Pilih Tanggal Berangkat">
         </div>
         
         <div class="flex items-end">
@@ -65,4 +65,49 @@
         @endif
     @endif
 </div>
+
+<!-- Flatpickr Integration for Availability Calendar -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let availableDates = @json($availableDates);
+        
+        let fp = flatpickr("#tanggal", {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            enable: availableDates,
+            disableMobile: "true"
+        });
+
+        const asalSelect = document.getElementById('kota_asal');
+        const tujuanSelect = document.getElementById('kota_tujuan');
+
+        function fetchAvailableDates() {
+            const asal = asalSelect.value;
+            const tujuan = tujuanSelect.value;
+            
+            if (!asal || !tujuan) return;
+
+            fetch(`/penumpang/api/jadwal/available-dates?kota_asal=${encodeURIComponent(asal)}&kota_tujuan=${encodeURIComponent(tujuan)}`)
+                .then(response => response.json())
+                .then(dates => {
+                    fp.set('enable', dates);
+                    
+                    // If current selected date is not in available dates, clear it
+                    const currentTime = fp.selectedDates[0];
+                    if (currentTime) {
+                        const currentFormatted = fp.formatDate(currentTime, "Y-m-d");
+                        if (!dates.includes(currentFormatted)) {
+                            fp.clear();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error fetching dates:', error));
+        }
+
+        asalSelect.addEventListener('change', fetchAvailableDates);
+        tujuanSelect.addEventListener('change', fetchAvailableDates);
+    });
+</script>
 @endsection
