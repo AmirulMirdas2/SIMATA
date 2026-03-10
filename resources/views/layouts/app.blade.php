@@ -16,7 +16,15 @@
                 <a href="{{ route(Auth::user()->role . '.dashboard') }}">SIMATA ({{ ucfirst(Auth::user()->role) }})</a>
             </h1>
             
-            @if(Auth::user()->role == 'penumpang')
+            @if(Auth::user()->role == 'admin')
+                <a href="{{ route('admin.rute.index') }}" class="hover:text-amber-300 font-semibold transition">Kelola Rute</a>
+                <a href="{{ route('admin.po.index') }}" class="hover:text-amber-300 font-semibold transition">Kelola PO Bus</a>
+                <a href="{{ route('admin.laporan.po') }}" class="hover:text-amber-300 font-semibold transition"><i class="fas fa-chart-line mr-1"></i>Laporan Pendapatan PO</a>
+            @elseif(Auth::user()->role == 'mitra')
+                <a href="{{ route('mitra.armada.index') }}" class="hover:text-amber-300 font-semibold transition">Kelola Armada</a>
+                <a href="{{ route('mitra.jadwal.index') }}" class="hover:text-amber-300 font-semibold transition">Kelola Jadwal</a>
+                <a href="{{ route('mitra.laporan.harian') }}" class="hover:text-amber-300 font-semibold transition"><i class="fas fa-money-bill-wave mr-1"></i>Laporan Keuangan</a>
+            @elseif(Auth::user()->role == 'penumpang')
                 <a href="{{ route('penumpang.cari') }}" class="hover:text-amber-300 font-semibold transition">Cari Tiket</a>
             @endif
         </div>

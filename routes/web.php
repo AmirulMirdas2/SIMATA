@@ -28,12 +28,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\AdminController::class, 'dashboard'])->name('dashboard');
         Route::resource('rute', \App\Http\Controllers\AdminRuteController::class);
         Route::resource('po', \App\Http\Controllers\AdminPoBusController::class);
+        
+        // Laporan Pendapatan 
+        Route::get('/laporan', [\App\Http\Controllers\AdminController::class, 'laporanPoBus'])->name('laporan.po');
+        Route::get('/laporan/po/{id}', [\App\Http\Controllers\AdminController::class, 'detailPendapatanPo'])->name('laporan.po.detail');
     });
 
     // Mitra Routes
     Route::middleware(['role:mitra'])->prefix('mitra')->name('mitra.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\MitraController::class, 'dashboard'])->name('dashboard');
         Route::get('/manifest', [\App\Http\Controllers\MitraController::class, 'manifest'])->name('manifest');
+        Route::get('/laporan-keuangan', [\App\Http\Controllers\MitraController::class, 'laporanHarian'])->name('laporan.harian');
         Route::resource('armada', \App\Http\Controllers\MitraArmadaController::class);
         Route::resource('jadwal', \App\Http\Controllers\MitraJadwalController::class);
     });

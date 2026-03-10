@@ -65,4 +65,30 @@ class MitraController extends Controller
 
         return view('mitra.manifest', compact('jadwals', 'selectedJadwal', 'kursis', 'tiketsMapped'));
     }
+
+    public function laporanHarian(Request $request)
+    {
+        $poBus = Auth::user()->poBus;
+        if (!$poBus) {
+            return redirect()->route('mitra.dashboard')->with('error', 'Akses terbatas.');
+        }
+
+        $tanggal = $request->input('tanggal', now()->format('Y-m-d'));
+
+        $totalPendapatan = Pemesanan::where('status_bayar', 'Paid')
+            ->whereDate('created_at', $tanggal)
+            ->whereHas('jadwal.armada', function($query) use ($poBus) {
+                // Ignore lint warning
+                $query->where('po_bus_id', $poBus->id);
+            })->sum('total_harga');
+
+        $pemesanans = Pemesanan::with(['user', 'jadwal.rute', 'jadwal.armada'])
+            ->where('status_bayar', 'Paid')
+            ->whereDate('created_at', $tanggal)
+            ->whereHas('jadwal.armada', function($query) use ($poBus) {
+                $query->where('po_bus_id', $poBus->id);
+            })->latest()->get();
+
+        return view('mitra.laporan_harian', compact('poBus', 'tanggal', 'totalPendapatan', 'pemesanans'));
+    }
 }
